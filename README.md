@@ -3,8 +3,30 @@ This script was created to run the GATK germline variant calling best pratices p
 The pipeline takes unprocessed bam file(s) as input and outputs the biological genomic variance of the input to a given reference
 
 ##Overview
+
 ###Setup & Pipeline
 There are 2 scripts, Setup and Pipeline. The setup script installs all of the necessary tools and all of the references. The pipeline script implements the GATK pipeline.
+
+###Reference Files
+All reference files have come from the GATK Resource bundle which can be found at [B37 Resource Bundle](ftp://ftp.broadinstitute.org/bundle/2.5/b37)
+
+* **Reference Genome (GRCh37):**
+* human_g1k_v37_decoy.fasta
+* **VCF files for RealignerTargetCreator knowns and dbsnp **for BaseRecalibrator.
+* known_indel: /data/GATK_Bundle/*Mills_and_1000G_gold_standard.indels.b37.vcf
+*known_indel: /data/GATK_Bundle/*1000G_phase1.indels.b37.vcf
+*known_dbsnp: /data/GATK_Bundle/dbsnp_137.b37.vcf
+* **1000Genomes Background BAMS ran concurrently with UnifiedGenotyper**
+CEU
+GBR
+* **Resource files for VariantRecalibrator_SNP**
+*hapmap_3.3.b37.vcf
+*1000G_omni2.5.b37.vcf
+*1000G_phase1.snps.high_confidence.b37.vcf
+* **Resource files for VariantRecalibrator_INDEL**
+*Mills_and_1000G_gold_standard.indels.b37.vcf
+*1000G_phase1.indels.b37.vcf
+
 ###Workflow
 The pre-processing stages of Flagstat,Sort,MarkD,Indel,BQSR are to be run on 1 genome at a time
 with the output from one stage being piped in as input for the next (w/the exception of Flagstat)
