@@ -5,7 +5,10 @@ The pipeline takes unprocessed bam file(s) as input and outputs the biological g
 ##Overview
 
 ###Setup & Pipeline
-There are 2 scripts, Setup and Pipeline. The setup script installs all of the necessary tools and all of the references. The pipeline script implements the GATK pipeline.
+There are 2 scripts, Setup and Pipeline. The setup script installs all of the necessary tools and all of the references. The pipeline script implements the GATK pipeline. If downloading files from s3, make sure to set Access Key and Secret Key environment variables.
+
+* SECRET_KEY=yourSecretKey
+* ACCESS_KEY=yourAccessKey
 
 ###Reference Files
 All reference files have come from the GATK Resource bundle which can be found at [B37 Resource Bundle](ftp://ftp.broadinstitute.org/bundle/2.5/b37)
