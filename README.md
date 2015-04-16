@@ -5,13 +5,10 @@ The pipeline takes unprocessed bam file(s) as input and outputs the biological g
 ##Overview
 
 ###Setup & Pipeline
-There are 2 scripts, Setup and Pipeline. The setup script installs all of the necessary tools and all of the references. The pipeline script implements the GATK pipeline. If downloading files from s3, make sure to set Access Key and Secret Key environment variables.
-
-* SECRET_KEY=yourSecretKey
-* ACCESS_KEY=yourAccessKey
+There are 2 scripts, Setup and Pipeline. The setup script installs all of the necessary tools and all of the references. The pipeline script implements the GATK pipeline. 
 
 ###Reference Files
-All reference files have come from the GATK Resource bundle which can be found at [B37 Resource Bundle](ftp://ftp.broadinstitute.org/bundle/2.5/b37)
+All reference files have come from the GATK Resource bundle which can be found at [B37 Resource Bundle](ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.5/b37)
 
 * **Reference Genome (GRCh37):**
 * human_g1k_v37_decoy.fasta
@@ -39,9 +36,15 @@ processes that do not depend on eachother in any way. They take the same input. 
 
 **Steps**
 
-1. Run GATKsetup.sh
-2. Create variables to s3 credentials
+1. Launch a trusty-ubuntu image
+1. Use chmod +x GATKsetup.sh to make the script executable
+2. If downloading any documents from s3, Create environment variables for your s3 credentials
+
+        export SECRET_KEY=yourSecretKey
+        export ACCESS_KEY=yourAccessKey
+3. Run GATKsetup.sh
 3. Use your favorite text editor to assign your input file(s) to the INPUT variable in the GATKpipe.sh script
+4. Use chmod +x GATKsetup.sh to make the script executable
 4. Run GATKpipe.sh
 
 ##Tools
