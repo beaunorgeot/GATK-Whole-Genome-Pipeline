@@ -15,9 +15,9 @@ set -o pipefail
 cd ~
 
 # Set RAM to use for all java processes
-RAM=-Xmx200g
+RAM=-Xmx60g
 # Set number of threads to the number of cores/machine for speed optimization
-THREADS=32
+THREADS=8
 
 # get input bam file
 #~/s3cmd/s3cmd get s3://bd2k-test-data/$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
@@ -112,7 +112,7 @@ time java $RAM \
     -knownSites /mnt/ephemeral/Mills_and_1000G_gold_standard.indels.b37.vcf \
     -knownSites /mnt/ephemeral/1000G_phase1.indels.b37.vcf \
     -o /mnt/ephemeral/recal_data.table \
-    -nct 32
+    -nct $THREADS
     > recalibrationTable.report 2>&1
 
 # recalibrate reads
@@ -123,7 +123,7 @@ time java $RAM \
     -I /mnt/ephemeral/$INPUT1.realigned.bam \
     -BQSR /mnt/ephemeral/recal_data.table \
     -o /mnt/ephemeral/$INPUT1.bqsr.bam \
-    -nct 32
+    -nct $THREADS
     > Bqsr.report 2>&1
 
 # GATK VARIANT CALLING
