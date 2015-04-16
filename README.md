@@ -81,8 +81,4 @@ but unless they meet the quality threshold set by -stand_call_conf (30.0, in thi
 they will be listed as failing the quality filter. My choices are 'generic'. 
 For variant optimization see: http://gatkforums.broadinstitute.org/discussion/1268/how-should-i-interpret-vcf-files-produced-by-the-gatk
 
-##Warnings:
--Make sure to place your actual bam files into -I flag Locations
--Update -L flags with the target_intervals for each bam
--secret_keys
--Change nt/nct appropriately for each instance type. 
+
