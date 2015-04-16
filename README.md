@@ -37,6 +37,13 @@ with the output from one stage being piped in as input for the next (w/the excep
 The input for variant calling stages is the final BQSR output. Calling indel and snp variants are independent
 processes that do not depend on eachother in any way. They take the same input. This is also true of VQSR
 
+**Steps**
+
+1. Run GATKsetup.sh
+2. Create variables to s3 credentials
+3. Use your favorite text editor to assign your input file(s) to the INPUT variable in the GATKpipe.sh script
+4. Run GATKpipe.sh
+
 ##Tools
 * **Process:**
 * Flagstat -get simple metrics on the reads
