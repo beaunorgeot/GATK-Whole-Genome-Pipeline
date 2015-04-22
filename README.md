@@ -43,11 +43,16 @@ processes that do not depend on eachother in any way. They take the same input. 
         export SECRET_KEY=yourSecretKey
         export ACCESS_KEY=yourAccessKey
 3. Run GATKsetup.sh
-3. Use your favorite text editor to assign your input file(s) to the INPUT variable in the GATKpipe.sh script
-4. Use chmod +x GATKsetup.sh to make the script executable
+
+		./GATKsetup.sh
+3
+. Use your favorite text editor to assign your input file(s) to the INPUT variable in the GATKpipe.sh script
+4. Use chmod +x GATKpipe.sh to make the script executable
 5. At top of GATKpipe.sh, change the RAM & THREADS variables to reflect 90% of machine RAM and number of cores, respectively
 6. Place the address to the appropriate input file on the next line of the script.
 4. Run GATKpipe.sh
+
+		./GATKpipe.sh
 
 ##Tools
 * **Process:**
