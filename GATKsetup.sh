@@ -3,7 +3,7 @@ set -e
 set -x 
 set -o pipefail
 
-cd /mnt/ephemeral
+cd /data
 
 #get reference genome
 wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.5/b37/human_g1k_v37.fasta.gz
@@ -32,6 +32,13 @@ gunzip 1000G_phase1.snps.high_confidence.b37.vcf.gz
 
 cd ~
 #TOOLS
+
+#Java
+sudo add-apt-repository -y ppa:webupd8team/java
+echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+sudo apt-get update
+sudo apt-get install oracle-java7-set-default
 
 # install s3cmd
 sudo apt-get -qy install s3cmd
