@@ -15,16 +15,14 @@ set -o pipefail
 cd ~
 
 # Set RAM to use for all java processes
-RAM=-Xmx60g
+RAM=-Xmx200g
 # Set number of threads to the number of cores/machine for speed optimization
-THREADS=8
+THREADS=32
 
 # get input bam file
 #~/s3cmd/s3cmd get s3://bd2k-test-data/$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeUwRepliSeq/wgEncodeUwRepliSeqBg02esG1bAlnRep1.bam
  
-
-
 # Create Variable for input file
 #INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906 
 INPUT1=wgEncodeUwRepliSeqBg02esG1bAlnRep1
@@ -137,11 +135,11 @@ time java $RAM
 	-nt $THREADS \
 	-R /b37/human_g1k_v37.fasta \
 	-T UnifiedGenotyper \
-	-I $INPUT1.recal.bam \
+	-I $INPUT1.bqsr.bam \
 	#-I $INPUT2.recal.bam \
 	#-I $INPUT3.recal.bam \
 	#-I $INPUT4.recal.bam \
-	-o unified.SNP.gatk.vcf \
+	-o unified.raw.SNP.gatk.vcf \
 	#-metrics snps.metrics \
 	-stand_call_conf 30.0 \
 	-stand_emit_conf 10.0 \
@@ -156,11 +154,11 @@ time java $RAM
 	-nt $THREADS \
 	-R /b37/human_g1k_v37.fasta \
 	-T UnifiedGenotyper \
-	-I $INPUT1.recal.bam \
+	-I $INPUT1.bqsr.bam \
 	#-I $INPUT2.recal.bam \
 	#-I $INPUT3.recal.bam \
 	#-I $INPUT4.recal.bam \
-	-o unified.INDEL.gatk.vcf \
+	-o unified.raw.INDEL.gatk.vcf \
 	#-metrics snps.metrics \
 	-stand_call_conf 30.0 \
 	-stand_emit_conf 10.0 \
@@ -174,7 +172,7 @@ time java $RAM
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T VariantRecalibrator
   -R human_g1k_v37.fasta
-  -input $INPUT1.raw.vcf
+  -input unified.raw.SNP.gatk.vcf
   -nt $THREADS
   -resource: hapmap,known=false,training=true,truth=true,prior=15.0 hapmap_3.3.b37.sites.vcf
   -resource: omni,known=false,training=true,truth=true,prior=12.0 1000G_omni2.5.b37.sites.vcf
@@ -209,7 +207,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T VariantRecalibrator
   -R human_g1k_v37.fasta
-  -input $INPUT1.raw.vcf
+  -input unified.raw.INDEL.gatk.vcf
   -nt $THREADS
   -resource: mills,known=false,training=true,truth=true,prior=12.0 Mills_and_1000G_gold_standard.indels.b37.vcf 
   -resource: 1000G,known=false,training=true,truth=true,prior=10.0 1000G_phase1.indels.b37.vcf
@@ -226,7 +224,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
 #Apply Indel Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T ApplyRecalibration
-  -input $INPUT1_raw_INDEL.vcf
+  -input unified.raw.INDEL.gatk.vcf
   -o $INPUT1_vqsr_INDEL.vcf
   -R human_g1k_v37.fasta
   -nt $THREADS
