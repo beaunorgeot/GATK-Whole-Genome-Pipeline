@@ -139,7 +139,7 @@ time java $RAM
 	#-I $INPUT2.recal.bam \
 	#-I $INPUT3.recal.bam \
 	#-I $INPUT4.recal.bam \
-	-o unified.raw.SNP.gatk.vcf \
+	-o $INPUT1.unified.raw.SNP.gatk.vcf \
 	#-metrics snps.metrics \
 	-stand_call_conf 30.0 \
 	-stand_emit_conf 10.0 \
@@ -158,7 +158,7 @@ time java $RAM
 	#-I $INPUT2.recal.bam \
 	#-I $INPUT3.recal.bam \
 	#-I $INPUT4.recal.bam \
-	-o unified.raw.INDEL.gatk.vcf \
+	-o $INPUT1.unified.raw.INDEL.gatk.vcf \
 	#-metrics snps.metrics \
 	-stand_call_conf 30.0 \
 	-stand_emit_conf 10.0 \
@@ -172,7 +172,7 @@ time java $RAM
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T VariantRecalibrator
   -R human_g1k_v37.fasta
-  -input unified.raw.SNP.gatk.vcf
+  -input $INPUT1.unified.raw.SNP.gatk.vcf
   -nt $THREADS
   -resource: hapmap,known=false,training=true,truth=true,prior=15.0 hapmap_3.3.b37.sites.vcf
   -resource: omni,known=false,training=true,truth=true,prior=12.0 1000G_omni2.5.b37.sites.vcf
@@ -192,8 +192,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
 #Apply Snp Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T ApplyRecalibration
-  -input $INPUT1_raw_SNP.vcf
-  -o $INPUT1_SNP_vqsr_SNP.vcf
+  -input $INPUT1.unified.raw.SNP.gatk.vcf
+  -o $INPUT1.SNP.vqsr.SNP.vcf
   -R human_g1k_v37.fasta
   -nt $THREADS
   -ts_filter_level: 99.0
@@ -207,7 +207,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T VariantRecalibrator
   -R human_g1k_v37.fasta
-  -input unified.raw.INDEL.gatk.vcf
+  -input $INPUT1.unified.raw.INDEL.gatk.vcf
   -nt $THREADS
   -resource: mills,known=false,training=true,truth=true,prior=12.0 Mills_and_1000G_gold_standard.indels.b37.vcf 
   -resource: 1000G,known=false,training=true,truth=true,prior=10.0 1000G_phase1.indels.b37.vcf
@@ -224,7 +224,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
 #Apply Indel Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar
   -T ApplyRecalibration
-  -input unified.raw.INDEL.gatk.vcf
+  -input $INPUT1.unified.raw.INDEL.gatk.vcf
   -o $INPUT1_vqsr_INDEL.vcf
   -R human_g1k_v37.fasta
   -nt $THREADS
