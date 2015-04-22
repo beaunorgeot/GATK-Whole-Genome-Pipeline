@@ -19,41 +19,46 @@ RAM=-Xmx200g
 # Set number of threads to the number of cores/machine for speed optimization
 THREADS=32
 
+cd /mnt
 # get input bam file
 #~/s3cmd/s3cmd get s3://bd2k-test-data/$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
-wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeUwRepliSeq/wgEncodeUwRepliSeqBg02esG1bAlnRep1.bam
- 
+
+#NA12878 chr20 bam
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam 
+
 # Create Variable for input file
 #INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906 
-INPUT1=wgEncodeUwRepliSeqBg02esG1bAlnRep1
+INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # index bam file
-samtools index /mnt/ephemeral/$INPUT1.bam
+samtools index /mnt/$INPUT1.bam
+
+cd ~
 
 #START PIPELINE
 # calculate flag stats using samtools
 time samtools flagstat \
-    /mnt/ephemeral/$INPUT1.bam
+    /mnt/$INPUT1.bam
 
 # sort reads in picard
 time java $RAM \
     -jar ~/picard/dist/picard.jar \
     SortSam \
-    INPUT=/mnt/ephemeral/$INPUT1.bam \
-    OUTPUT=/mnt/ephemeral/$INPUT1.sorted.bam \
+    INPUT=/mnt/$INPUT1.bam \
+    OUTPUT=/mnt/$INPUT1.sorted.bam \
     SORT_ORDER=coordinate
     > sortReads.report 2>&1
-rm -r /mnt/ephemeral/$INPUT1.bam
+rm -r /mnt/$INPUT1.bam
 
 # mark duplicates reads in picard
 time java $RAM \
     -jar ~/picard/dist/picard.jar \
     MarkDuplicates \
-    INPUT=/mnt/ephemeral/$INPUT1.sorted.bam \
-    OUTPUT=/mnt/ephemeral/$INPUT1.mkdup.bam \
+    INPUT=/mnt/$INPUT1.sorted.bam \
+    OUTPUT=/mnt/$INPUT1.mkdup.bam \
     METRICS_FILE=/dev/null #File to write duplication metrics to, Required
     > markDups.report 2>&1
-rm -r /mnt/ephemeral/$INPUT1.sorted.bam
+rm -r /mnt/$INPUT1.sorted.bam
 
 # GATK Indel Realignment
 # There are 2 steps to the realignment process
@@ -61,7 +66,7 @@ rm -r /mnt/ephemeral/$INPUT1.sorted.bam
 # 2. Running the realigner over those intervals (IndelRealigner)
 
 # index reference genome, There's no need for this, we have the .fai file
-# samtools faidx /mnt/ephemeral/human_g1k_v37.fasta
+# samtools faidx /mnt/human_g1k_v37.fasta
 
 # create sequence dictionary for reference genome
 # We could skip this step. I've download the b37.dict
@@ -69,18 +74,18 @@ rm -r /mnt/ephemeral/$INPUT1.sorted.bam
 java $RAM \
     -jar ~/picard/dist/picard.jar \
     CreateSequenceDictionary \
-    REFERENCE=/mnt/ephemeral/human_g1k_v37.fasta \
-    OUTPUT=/mnt/ephemeral/human_g1k_v37.fasta.dict 
+    REFERENCE=/mnt/human_g1k_v37.fasta \
+    OUTPUT=/mnt/human_g1k_v37.fasta.dict 
 
 # create target indels (find areas likely in need of realignment)
 time java $RAM \
     -jar ~/gatk-protected/target/GenomeAnalysisTK.jar \
     -T RealignerTargetCreator \
-    -known /mnt/ephemeral/Mills_and_1000G_gold_standard.indels.b37.vcf \
-    -known /mnt/ephemeral/1000G_phase1.indels.b37.vcf \
-    -R /mnt/ephemeral/human_g1k_v37.fasta \
-    -I /mnt/ephemeral/$INPUT1.mkdups.bam \
-    -o /mnt/ephemeral/target_intervals.list \
+    -known /mnt/Mills_and_1000G_gold_standard.indels.b37.vcf \
+    -known /mnt/1000G_phase1.indels.b37.vcf \
+    -R /mnt/human_g1k_v37.fasta \
+    -I /mnt/$INPUT1.mkdups.bam \
+    -o /mnt/target_intervals.list \
     -nt $THREADS 
     > targetIndels.report 2>&1
 
@@ -88,15 +93,15 @@ time java $RAM \
 time java $RAM \
     -jar ~/gatk-protected/target/GenomeAnalysisTK.jar \
     -T IndelRealigner \
-    -known /mnt/ephemeral/Mills_and_1000G_gold_standard.indels.b37.vcf \
-    -known /mnt/ephemeral/1000G_phase1.indels.b37.vcf \
-    -R /mnt/ephemeral/human_g1k_v37.fasta \
-    -targetIntervals /mnt/ephemeral/target_intervals.list \
-    -I /mnt/ephemeral/$INPUT1.mkdup.bam \
-    -o /mnt/ephemeral/$INPUT1.realigned.bam \
+    -known /mnt/Mills_and_1000G_gold_standard.indels.b37.vcf \
+    -known /mnt/1000G_phase1.indels.b37.vcf \
+    -R /mnt/human_g1k_v37.fasta \
+    -targetIntervals /mnt/target_intervals.list \
+    -I /mnt/$INPUT1.mkdup.bam \
+    -o /mnt/$INPUT1.realigned.bam \
     -nt $THREADS 
     > realignIndels.report 2>&1
-rm -r /mnt/ephemeral/$INPUT1.mkdup.bam
+rm -r /mnt/$INPUT1.mkdup.bam
 
 # GATK BQSR
 
@@ -104,12 +109,12 @@ rm -r /mnt/ephemeral/$INPUT1.mkdup.bam
 time java $RAM \
     -jar ~/gatk-protected/target/GenomeAnalysisTK.jar \
     -T BaseRecalibrator \
-    -R /mnt/ephemeral/human_g1k_v37.fasta \
-    -I /mnt/ephemeral/$INPUT1.bam \
-    -knownSites /mnt/ephemeral/dbsnp_138.vcf \
-    -knownSites /mnt/ephemeral/Mills_and_1000G_gold_standard.indels.b37.vcf \
-    -knownSites /mnt/ephemeral/1000G_phase1.indels.b37.vcf \
-    -o /mnt/ephemeral/recal_data.table \
+    -R /mnt/human_g1k_v37.fasta \
+    -I /mnt/$INPUT1.bam \
+    -knownSites /mnt/dbsnp_138.vcf \
+    -knownSites /mnt/Mills_and_1000G_gold_standard.indels.b37.vcf \
+    -knownSites /mnt/1000G_phase1.indels.b37.vcf \
+    -o /mnt/recal_data.table \
     -nct $THREADS
     > recalibrationTable.report 2>&1
 
@@ -117,10 +122,10 @@ time java $RAM \
 time java $RAM \
     -jar ~/gatk-protected/target/GenomeAnalysisTK.jar \
     -T PrintReads \
-    -R /mnt/ephemeral/human_g1k_v37.fasta \
-    -I /mnt/ephemeral/$INPUT1.realigned.bam \
-    -BQSR /mnt/ephemeral/recal_data.table \
-    -o /mnt/ephemeral/$INPUT1.bqsr.bam \
+    -R /mnt/human_g1k_v37.fasta \
+    -I /mnt/$INPUT1.realigned.bam \
+    -BQSR /mnt/recal_data.table \
+    -o /mnt/$INPUT1.bqsr.bam \
     -nct $THREADS
     > Bqsr.report 2>&1
 
