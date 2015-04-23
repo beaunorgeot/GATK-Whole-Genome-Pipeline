@@ -147,48 +147,48 @@ time java $RAM \
 
 #snps
 time java $RAM \
-	-jar ~/GenomeAnalysisTK.jar \
-	-nt $THREADS \
-	-R /b37/${ref} \
-	-T UnifiedGenotyper \
-	-I $INPUT1.bqsr.bam \
+-jar ~/GenomeAnalysisTK.jar \
+-nt $THREADS \
+-R ${dir}/${ref} \
+-T UnifiedGenotyper \
+-I ${dir}/$INPUT1.bqsr.bam \
+-o ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
+-stand_call_conf 30.0 \
+-stand_emit_conf 10.0 \
+-dcov 200 \
+-glm SNP \
+> SnpVars.report 2>&1
 	#-I $INPUT2.recal.bam \
 	#-I $INPUT3.recal.bam \
 	#-I $INPUT4.recal.bam \
-	-o $INPUT1.unified.raw.SNP.gatk.vcf \
 	#-metrics snps.metrics \
-	-stand_call_conf 30.0 \
-	-stand_emit_conf 10.0 \
-	-dcov 200 \
 	#-L /b37/target_intervals.bed \ intervals to operate over. See docstring
-	-glm SNP \
-	> SnpVars.report 2>&1
 
 #indels
 time java $RAM \
-	-jar ~/GenomeAnalysisTK.jar \
-	-nt $THREADS \
-	-R /b37/${ref} \
-	-T UnifiedGenotyper \
-	-I $INPUT1.bqsr.bam \
+-jar ~/GenomeAnalysisTK.jar \
+-nt $THREADS \
+-R ${dir}/${ref} \
+-T UnifiedGenotyper \
+-I ${dir}/$INPUT1.bqsr.bam \
+-o ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
+-stand_call_conf 30.0 \
+-stand_emit_conf 10.0 \
+-dcov 200 \
+-glm INDEL \
+> indelVars.report 2>&1
 	#-I $INPUT2.recal.bam \
 	#-I $INPUT3.recal.bam \
 	#-I $INPUT4.recal.bam \
-	-o $INPUT1.unified.raw.INDEL.gatk.vcf \
 	#-metrics snps.metrics \
-	-stand_call_conf 30.0 \
-	-stand_emit_conf 10.0 \
-	-dcov 200 \
 	#-L /b37/target_intervals.bed \ #see docstring
-	-glm INDEL \
-	> indelVars.report 2>&1
 
 ## GATK VARIANT QUALITY SCORE RECALIBRATION
 # Snp Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
-  -R ${ref} \
-  -input $INPUT1.unified.raw.SNP.gatk.vcf \
+  -R ${dir}/${ref} \
+  -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
   -nt $THREADS \
   -resource: hapmap,known=false,training=true,truth=true,prior=15.0 hapmap_3.3.b37.sites.vcf \
   -resource: omni,known=false,training=true,truth=true,prior=12.0 1000G_omni2.5.b37.sites.vcf \
@@ -200,30 +200,30 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -use_annotation: FS \
   -numBadVariants: 5000 \
   -mode SNP \
-  -recalFile $INPUT1_SNP.recal \
-  -tranchesFile $INPUT1_SNP.tranches \
-  -rscriptFile $INPUT1_SNP.plots.R \
+  -recalFile ${dir}/$INPUT1_SNP.recal \
+  -tranchesFile ${dir}/$INPUT1_SNP.tranches \
+  -rscriptFile ${dir}/$INPUT1_SNP.plots.R \
   > VariantRecalibrator_SNP.report 2>&1
 
 #Apply Snp Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
-  -input $INPUT1.unified.raw.SNP.gatk.vcf \
-  -o $INPUT1.SNP.vqsr.SNP.vcf \
-  -R ${ref} \
+  -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
+  -o ${dir}/$INPUT1.SNP.vqsr.SNP.vcf \
+  -R ${dir}/${ref} \
   -nt $THREADS \
   -ts_filter_level: 99.0 \
   -excludeFiltered : TRUE \
-  -tranchesFile $INPUT1.tranches \
-  -recalFile $INPUT1.recal \
+  -tranchesFile ${dir}/$INPUT1.tranches \
+  -recalFile ${dir}/$INPUT1.recal \
   -mode SNP \
   > ApplyRecalibration_SNP.report 2>&1
 
 #Indel Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
-  -R ${ref} \
-  -input $INPUT1.unified.raw.INDEL.gatk.vcf \
+  -R ${dir}/${ref} \
+  -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
   -nt $THREADS \
   -resource: mills,known=false,training=true,truth=true,prior=12.0 Mills_and_1000G_gold_standard.indels.b37.vcf \
   -resource: 1000G,known=false,training=true,truth=true,prior=10.0 1000G_phase1.indels.b37.vcf \
@@ -232,22 +232,22 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -use_annotation: FS \
   -numBadVariants: 5000 \
   -mode INDEL \
-  -recalFile $INPUT1_INDEL.recal \
-  -tranchesFile $INPUT1_INDEL.tranches \
-  -rscriptFile $INPUT1_INDEL.plots.R \
+  -recalFile ${dir}/$INPUT1_INDEL.recal \
+  -tranchesFile ${dir}/$INPUT1_INDEL.tranches \
+  -rscriptFile ${dir}/$INPUT1_INDEL.plots.R \
   > VariantRecalibrator_INDEL.report 2>&1
 
 #Apply Indel Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
-  -input $INPUT1.unified.raw.INDEL.gatk.vcf \
-  -o $INPUT1_vqsr_INDEL.vcf \
-  -R ${ref} \
+  -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
+  -o ${dir}/$INPUT1_vqsr_INDEL.vcf \
+  -R ${dir}/${ref} \
   -nt $THREADS \
   -ts_filter_level: 99.0 \
   -excludeFiltered : TRUE \
-  -tranchesFile $INPUT1.tranches \
-  -recalFile $INPUT1.recal \
+  -tranchesFile ${dir}/$INPUT1.tranches \
+  -recalFile ${dir}/$INPUT1.recal \
   -mode INDEL \
   > ApplyRecalibration_INDEL.report 2>&1
 
@@ -257,25 +257,25 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
 #Select Snp
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T SelectVariants \
-  -R ${ref} \
+  -R ${dir}/${ref} \
   --variant SNP_variant \
-  -o output_selected_SNP.file \
+  -o ${dir}/output_selected_SNP.file \
   > SelectVariants_SNP.report 2>&1
 
 #Select Indel
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T SelectVariants \
-  -R ${ref} \
+  -R ${dir}/${ref} \
   --variant INDEL_variant \
-  -o output_Selected_INDEL.file \
+  -o ${dir}/output_Selected_INDEL.file \
   > SelectVariants_INDEL.report 2>&1
 
 #Combine Variants
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T CombineVariants \
-  -R ${ref} \
+  -R ${dir}/${ref} \
   --variant INDEL_variant \
   --variant  output_Selected_INDEL.file \
   --variant output_Selected_SNP.file \
-  -o Final_combined_variants.vcf \
+  -o ${dir}/Final_combined_variants.vcf \
   > CombineVarients.report 2>&1
