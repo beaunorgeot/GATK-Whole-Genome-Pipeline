@@ -20,6 +20,9 @@ RAM=-Xmx200g
 THREADS=32
 # Set the dir for the reference files and input bam
 dir=/data
+# Set the reference fasta
+# CHECK LINE 83 OR THERE-ABOUTS, IT POINTS TO A REFERENCE NOT INCLUDED IN THIS VAR
+ref=hs37d5.fa
 
 cd ${dir}
 # get input bam file
@@ -69,7 +72,7 @@ rm -r ${dir}/$INPUT1.sorted.bam
 # 2. Running the realigner over those intervals (IndelRealigner)
 
 # index reference genome, There's no need for this, we have the .fai file
-# samtools faidx ${dir}/human_g1k_v37.fasta
+# samtools faidx ${dir}/${ref}
 
 # create sequence dictionary for reference genome
 # We could skip this step. I've download the b37.dict
@@ -77,8 +80,10 @@ rm -r ${dir}/$INPUT1.sorted.bam
 java $RAM \
     -jar ~/picard/picard.jar \
     CreateSequenceDictionary \
-    REFERENCE=${dir}/human_g1k_v37.fasta \
-    OUTPUT=${dir}/human_g1k_v37.fasta.dict 
+    REFERENCE=${dir}/${ref} \
+    OUTPUT=${dir}/hs37d5.dict
+    #OUTPUT=${dir}/human_g1k_v37.dict 
+    #OUTPUT=${dir}/${ref}.dict
 
 # Index the markdups.bam for realignment
 samtools index ${dir}/$INPUT1.mkdups.bam
@@ -89,10 +94,10 @@ time java $RAM \
     -T RealignerTargetCreator \
     -known ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
     -known ${dir}/1000G_phase1.indels.b37.vcf \
-    -R ${dir}/human_g1k_v37.fasta \
+    -R ${dir}/${ref} \
     -I ${dir}/$INPUT1.mkdups.bam \
     -o ${dir}/target_intervals.list \
-    -nt $THREADS \
+    -nt $THREADS 
     > targetIndels.report 2>&1
 
 # realign reads
@@ -101,11 +106,11 @@ time java $RAM \
     -T IndelRealigner \
     -known ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
     -known ${dir}/1000G_phase1.indels.b37.vcf \
-    -R ${dir}/human_g1k_v37.fasta \
+    -R ${dir}/${ref} \
     -targetIntervals ${dir}/target_intervals.list \
-    -I ${dir}/$INPUT1.mkdup.bam \
+    -I ${dir}/$INPUT1.mkdups.bam \
     -o ${dir}/$INPUT1.realigned.bam \
-    -nt $THREADS \
+    #-nt $THREADS \ nt is not supported by IndelRealigner
     > realignIndels.report 2>&1
 rm -r ${dir}/$INPUT1.mkdups.bam
 
@@ -115,9 +120,9 @@ rm -r ${dir}/$INPUT1.mkdups.bam
 time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T BaseRecalibrator \
-    -R ${dir}/human_g1k_v37.fasta \
+    -R ${dir}/${ref} \
     -I ${dir}/$INPUT1 \
-    -knownSites ${dir}/dbsnp_138.vcf \
+    -knownSites ${dir}/dbsnp_137.vcf \
     -knownSites ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
     -knownSites ${dir}/1000G_phase1.indels.b37.vcf \
     -o ${dir}/recal_data.table \
@@ -128,7 +133,7 @@ time java $RAM \
 time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T PrintReads \
-    -R ${dir}/human_g1k_v37.fasta \
+    -R ${dir}/${ref} \
     -I ${dir}/$INPUT1.realigned.bam \
     -BQSR ${dir}/recal_data.table \
     -o ${dir}/$INPUT1.bqsr.bam \
@@ -144,7 +149,7 @@ time java $RAM \
 time java $RAM
 	-jar ~/GenomeAnalysisTK.jar \
 	-nt $THREADS \
-	-R /b37/human_g1k_v37.fasta \
+	-R /b37/${ref} \
 	-T UnifiedGenotyper \
 	-I $INPUT1.bqsr.bam \
 	#-I $INPUT2.recal.bam \
@@ -163,7 +168,7 @@ time java $RAM
 time java $RAM
 	-jar ~/GenomeAnalysisTK.jar \
 	-nt $THREADS \
-	-R /b37/human_g1k_v37.fasta \
+	-R /b37/${ref} \
 	-T UnifiedGenotyper \
 	-I $INPUT1.bqsr.bam \
 	#-I $INPUT2.recal.bam \
@@ -182,7 +187,7 @@ time java $RAM
 # Snp Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   -input $INPUT1.unified.raw.SNP.gatk.vcf \
   -nt $THREADS \
   -resource: hapmap,known=false,training=true,truth=true,prior=15.0 hapmap_3.3.b37.sites.vcf \
@@ -205,7 +210,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input $INPUT1.unified.raw.SNP.gatk.vcf \
   -o $INPUT1.SNP.vqsr.SNP.vcf \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   -nt $THREADS \
   -ts_filter_level: 99.0 \
   -excludeFiltered : TRUE \
@@ -217,7 +222,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
 #Indel Recalibration
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   -input $INPUT1.unified.raw.INDEL.gatk.vcf \
   -nt $THREADS \
   -resource: mills,known=false,training=true,truth=true,prior=12.0 Mills_and_1000G_gold_standard.indels.b37.vcf \
@@ -237,7 +242,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input $INPUT1.unified.raw.INDEL.gatk.vcf \
   -o $INPUT1_vqsr_INDEL.vcf \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   -nt $THREADS \
   -ts_filter_level: 99.0 \
   -excludeFiltered : TRUE \
@@ -252,7 +257,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
 #Select Snp
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T SelectVariants \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   --variant SNP_variant \
   -o output_selected_SNP.file \
   > SelectVariants_SNP.report 2>&1
@@ -260,7 +265,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
 #Select Indel
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T SelectVariants \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   --variant INDEL_variant \
   -o output_Selected_INDEL.file \
   > SelectVariants_INDEL.report 2>&1
@@ -268,7 +273,7 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
 #Combine Variants
 java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -T CombineVariants \
-  -R human_g1k_v37.fasta \
+  -R ${ref} \
   --variant INDEL_variant \
   --variant  output_Selected_INDEL.file \
   --variant output_Selected_SNP.file \
