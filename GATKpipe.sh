@@ -1,7 +1,7 @@
 #! /bin/bash
 
-# This script was created to run the GATK germline variant calling best pratices pipeline. 
-# The pipeline takes unprocessed bam file(s) as input and outputs the biological genomic variance 
+# This script was created to run the GATK germline variant calling best pratices pipeline.
+# The pipeline takes unprocessed bam file(s) as input and outputs the biological genomic variance
 # of the input to a given reference
 
 # Run the GATKsetup.sh script first. See the associated README
@@ -9,7 +9,7 @@
 # stderr redirected to descriptively named files.report
 
 set -e
-set -x 
+set -x
 set -o pipefail
 
 cd ~
@@ -29,10 +29,10 @@ cd ${dir}
 #~/s3cmd/s3cmd get s3://bd2k-test-data/$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 
 #NA12878 chr20 bam
-wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam 
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # Create Variable for input file
-#INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906 
+#INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
 INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # index bam file
@@ -51,7 +51,7 @@ time java $RAM \
     SortSam \
     INPUT=${dir}/$INPUT1 \
     OUTPUT=${dir}/$INPUT1.sorted.bam \
-    SORT_ORDER=coordinate 
+    SORT_ORDER=coordinate
     > sortReads.report 2>&1
 rm -r ${dir}/$INPUT1
 
@@ -62,7 +62,7 @@ time java $RAM \
     INPUT=${dir}/$INPUT1.sorted.bam \
     OUTPUT=${dir}/$INPUT1.mkdups.bam \
     METRICS_FILE=metrics.txt \
-    ASSUME_SORTED=true  
+    ASSUME_SORTED=true
     > markDups.report 2>&1
 rm -r ${dir}/$INPUT1.sorted.bam
 
@@ -82,7 +82,7 @@ java $RAM \
     CreateSequenceDictionary \
     REFERENCE=${dir}/${ref} \
     OUTPUT=${dir}/hs37d5.dict
-    #OUTPUT=${dir}/human_g1k_v37.dict 
+    #OUTPUT=${dir}/human_g1k_v37.dict
     #OUTPUT=${dir}/${ref}.dict
 
 # Index the markdups.bam for realignment
@@ -97,7 +97,7 @@ time java $RAM \
     -R ${dir}/${ref} \
     -I ${dir}/$INPUT1.mkdups.bam \
     -o ${dir}/target_intervals.list \
-    -nt $THREADS 
+    -nt $THREADS
     > targetIndels.report 2>&1
 
 # realign reads
@@ -121,8 +121,8 @@ time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T BaseRecalibrator \
     -R ${dir}/${ref} \
-    -I ${dir}/$INPUT1 \
-    -knownSites ${dir}/dbsnp_137.vcf \
+    -I ${dir}/$INPUT1.realigned.bam \
+    -knownSites ${dir}/dbsnp_137.b37.vcf \
     -knownSites ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
     -knownSites ${dir}/1000G_phase1.indels.b37.vcf \
     -o ${dir}/recal_data.table \
@@ -138,7 +138,7 @@ time java $RAM \
     -BQSR ${dir}/recal_data.table \
     -o ${dir}/$INPUT1.bqsr.bam \
     -nct $THREADS \
-    > Bqsr.report 2>&1
+    > bqsr.report 2>&1
 
 # GATK VARIANT CALLING
 # two stages, check for snps, check for indels
@@ -146,7 +146,7 @@ time java $RAM \
 # 1000Genomes Background BAMS can be run concurrently with UnifiedGenotyper to improve accuracy? (CEU,GBR are the recommended ones)
 
 #snps
-time java $RAM
+time java $RAM \
 	-jar ~/GenomeAnalysisTK.jar \
 	-nt $THREADS \
 	-R /b37/${ref} \
@@ -165,7 +165,7 @@ time java $RAM
 	> SnpVars.report 2>&1
 
 #indels
-time java $RAM
+time java $RAM \
 	-jar ~/GenomeAnalysisTK.jar \
 	-nt $THREADS \
 	-R /b37/${ref} \
@@ -199,10 +199,10 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -use_annotation: ReadPosRankSum \
   -use_annotation: FS \
   -numBadVariants: 5000 \
-  -mode SNP \                           
-  -recalFile $INPUT1_SNP.recal \       
-  -tranchesFile $INPUT1_SNP.tranches \     
-  -rscriptFile $INPUT1_SNP.plots.R       
+  -mode SNP \
+  -recalFile $INPUT1_SNP.recal \
+  -tranchesFile $INPUT1_SNP.tranches \
+  -rscriptFile $INPUT1_SNP.plots.R \
   > VariantRecalibrator_SNP.report 2>&1
 
 #Apply Snp Recalibration
@@ -232,9 +232,9 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   -use_annotation: FS \
   -numBadVariants: 5000 \
   -mode INDEL \
-  -recalFile $INPUT1_INDEL.recal \            
-  -tranchesFile $INPUT1_INDEL.tranches \      
-  -rscriptFile $INPUT1_INDEL.plots.R \       
+  -recalFile $INPUT1_INDEL.recal \
+  -tranchesFile $INPUT1_INDEL.tranches \
+  -rscriptFile $INPUT1_INDEL.plots.R \
   > VariantRecalibrator_INDEL.report 2>&1
 
 #Apply Indel Recalibration
