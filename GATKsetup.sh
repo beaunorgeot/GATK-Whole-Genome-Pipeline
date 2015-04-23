@@ -13,6 +13,11 @@ gunzip human_g1k_v37.fasta
 gunzip human_g1k_v37.fasta.fai 
 gunzip human_g1k_v37.dict.gz
 
+#phase2 reference
+#wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz
+#gunzip hs37d5.fa.gz
+#samtools faidx hs37d5.fa
+
 # VCF files for VariantRecalibrator_INDEL.RealignerTargetCreator knowns, and dbsnp for BaseRecalibraton
 wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.5/b37/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
 wget ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.5/b37/1000G_phase1.indels.b37.vcf.gz
