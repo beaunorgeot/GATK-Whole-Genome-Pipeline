@@ -185,7 +185,9 @@ time java $RAM \
 
 ## GATK VARIANT QUALITY SCORE RECALIBRATION
 # Snp Recalibration
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM \
+  -Djava.io.tmpdir=/tmp \
+  -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
@@ -206,7 +208,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   > VariantRecalibrator_SNP.report 2>&1
 
 #Apply Snp Recalibration
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM -Djava.io.tmpdir=/tmp \
+  -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
   -o ${dir}/$INPUT1.SNP.vqsr.SNP.vcf \
@@ -220,7 +223,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   > ApplyRecalibration_SNP.report 2>&1
 
 #Indel Recalibration
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM -Djava.io.tmpdir=/tmp \
+  -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
   -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
@@ -238,7 +242,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   > VariantRecalibrator_INDEL.report 2>&1
 
 #Apply Indel Recalibration
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM -Djava.io.tmpdir=/tmp
+  -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
   -o ${dir}/$INPUT1_vqsr_INDEL.vcf \
@@ -255,7 +260,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
 #These steps remove the background files and output SNP and INDEL files, then combine them into a single VCF file
 
 #Select Snp
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM -Djava.io.tmpdir=/tmp \
+  -jar ~/GenomeAnalysisTK.jar \
   -T SelectVariants \
   -R ${dir}/${ref} \
   --variant SNP_variant \
@@ -263,7 +269,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   > SelectVariants_SNP.report 2>&1
 
 #Select Indel
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM -Djava.io.tmpdir=/tmp \
+  -jar ~/GenomeAnalysisTK.jar \
   -T SelectVariants \
   -R ${dir}/${ref} \
   --variant INDEL_variant \
@@ -271,7 +278,8 @@ java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
   > SelectVariants_INDEL.report 2>&1
 
 #Combine Variants
-java $RAM -Djava.io.tmpdir=/tmp GenomeAnalysisTK.jar \
+java $RAM -Djava.io.tmpdir=/tmp \
+  -jar ~/GenomeAnalysisTK.jar \
   -T CombineVariants \
   -R ${dir}/${ref} \
   --variant INDEL_variant \
