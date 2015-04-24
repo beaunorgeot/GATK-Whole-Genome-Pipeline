@@ -192,9 +192,9 @@ java $RAM \
   -R ${dir}/${ref} \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
   -nt $THREADS \
-  -resource: hapmap,known=false,training=true,truth=true,prior=15.0 hapmap_3.3.b37.sites.vcf \
-  -resource: omni,known=false,training=true,truth=true,prior=12.0 1000G_omni2.5.b37.sites.vcf \
-  -resource: dbsnp,known=false,training=true,truth=false,prior=6.0 dbsnp_135.b37.vcf \
+  -resource: hapmap,known=false,training=true,truth=true,prior=15.0 /data/hapmap_3.3.b37.vcf \
+  -resource: omni,known=false,training=true,truth=true,prior=12.0 /data/1000G_omni2.5.b37.vcf \
+  -resource: dbsnp,known=false,training=true,truth=false,prior=6.0 /data/dbsnp_137.b37.vcf \
   -use_annotation: QD \
   -use_annotation: HaplotypeScore \
   -use_annotation: MQRankSum \
