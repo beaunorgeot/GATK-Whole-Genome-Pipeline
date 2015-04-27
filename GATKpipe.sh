@@ -186,7 +186,6 @@ time java $RAM \
 ## GATK VARIANT QUALITY SCORE RECALIBRATION
 # Snp Recalibration
 java $RAM \
-  -Djava.io.tmpdir=/tmp \
   -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
@@ -195,18 +194,21 @@ java $RAM \
   -resource:hapmap,known=false,training=true,truth=true,prior=15.0 ${dir}/hapmap_3.3.b37.vcf \
   -resource:omni,known=false,training=true,truth=true,prior=12.0 ${dir}/1000G_omni2.5.b37.vcf \
   -resource:dbsnp,known=false,training=true,truth=false,prior=6.0 ${dir}/dbsnp_137.b37.vcf \
-  -an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an FS -an MQ \
+  -an QD \
+  -an DP \
+  -an FS \
+  -an MQRankSum \
   -mode SNP \
-  -recalFile ${dir}/$INPUT1_SNP.recal \
-  -tranchesFile ${dir}/$INPUT1_SNP.tranches \
-  -rscriptFile ${dir}/$INPUT1_SNP.plots.R \
+  -recalFile ${dir}/$INPUT1.SNP.recal \
+  -tranchesFile ${dir}/$INPUT1.SNP.tranches \
+  -rscriptFile ${dir}/$INPUT1.SNP.plots.R \
   > VariantRecalibrator_SNP.report 2>&1
 #try simply removing the additional args at the end of 195:197 completely?
 # But my current layout is exactly like the docs:https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_variantrecalibration_VariantRecalibrator.php
 
 
 #Apply Snp Recalibration
-java $RAM -Djava.io.tmpdir=/tmp \
+java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
@@ -214,15 +216,15 @@ java $RAM -Djava.io.tmpdir=/tmp \
   -R ${dir}/${ref} \
   -nt $THREADS \
   -ts_filter_level 99.0 \
-  -tranchesFile ${dir}/$INPUT1_SNP.tranches \
-  -recalFile ${dir}/$INPUT1_SNP.recal \
+  -tranchesFile ${dir}/$INPUT1.SNP.tranches \
+  -recalFile ${dir}/$INPUT1.SNP.recal \
   -mode SNP \
   > ApplyRecalibration_SNP.report 2>&1
   # removed:  -excludeFiltered : TRUE \
 
 
 #Indel Recalibration
-java $RAM -Djava.io.tmpdir=/tmp \
+java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
@@ -230,24 +232,27 @@ java $RAM -Djava.io.tmpdir=/tmp \
   -nt $THREADS \
   -resource:mills,known=false,training=true,truth=true,prior=12.0 ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
   -resource:1000G,known=false,training=true,truth=true,prior=10.0 ${dir}/1000G_phase1.indels.b37.vcf \
-  -an QD -an MQRankSum -an ReadPosRankSum -an FS -an MQ \
+  -an QD \
+  -an DP \
+  -an FS \
+  -an MQRankSum \
   -mode INDEL \
-  -recalFile ${dir}/$INPUT1_INDEL.recal \
-  -tranchesFile ${dir}/$INPUT1_INDEL.tranches \
-  -rscriptFile ${dir}/$INPUT1_INDEL.plots.R \
+  -recalFile ${dir}/$INPUT1.INDEL.recal \
+  -tranchesFile ${dir}/$INPUT1.INDEL.tranches \
+  -rscriptFile ${dir}/$INPUT1.INDEL.plots.R \
   > VariantRecalibrator_INDEL.report 2>&1
 
 #Apply Indel Recalibration
-java $RAM -Djava.io.tmpdir=/tmp
+java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
-  -o ${dir}/$INPUT1_vqsr_INDEL.vcf \
+  -o ${dir}/$INPUT1.vqsr_INDEL.vcf \
   -R ${dir}/${ref} \
   -nt $THREADS \
   -ts_filter_level 99.0 \
-  -tranchesFile ${dir}/$INPUT1_INDEL.tranches \
-  -recalFile ${dir}/$INPUT1_INDEL.recal \
+  -tranchesFile ${dir}/$INPUT1.INDEL.tranches \
+  -recalFile ${dir}/$INPUT1.INDEL.recal \
   -mode INDEL \
   > ApplyRecalibration_INDEL.report 2>&1
 #removed:  -excludeFiltered : TRUE \
@@ -256,7 +261,7 @@ java $RAM -Djava.io.tmpdir=/tmp
 #These steps remove the background files and output SNP and INDEL files, then combine them into a single VCF file
 
 #Select Snp
-java $RAM -Djava.io.tmpdir=/tmp \
+java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T SelectVariants \
   -R ${dir}/${ref} \
@@ -265,16 +270,16 @@ java $RAM -Djava.io.tmpdir=/tmp \
   > SelectVariants_SNP.report 2>&1
 
 #Select Indel
-java $RAM -Djava.io.tmpdir=/tmp \
+java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T SelectVariants \
   -R ${dir}/${ref} \
-  --variant ${dir}/$INPUT1_vqsr_INDEL.vcf \
+  --variant ${dir}/$INPUT1.vqsr_INDEL.vcf \
   -o ${dir}/output_Selected_INDEL.file \
   > SelectVariants_INDEL.report 2>&1
 
 #Combine Variants
-java $RAM -Djava.io.tmpdir=/tmp \
+java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T CombineVariants \
   -R ${dir}/${ref} \
