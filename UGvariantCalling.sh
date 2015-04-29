@@ -72,7 +72,7 @@ java $RAM \
   -nt $THREADS \
   -resource:hapmap,known=false,training=true,truth=true,prior=15.0 ${dir}/hapmap_3.3.b37.vcf \
   -resource:omni,known=false,training=true,truth=true,prior=12.0 ${dir}/1000G_omni2.5.b37.vcf \
-  -resource:dbsnp,known=true,training=false,truth=false,prior=6.0 ${dir}/dbsnp_137.b37.vcf \
+  -resource:dbsnp,known=true,training=false,truth=false,prior=2.0 ${dir}/dbsnp_137.b37.vcf \
   -resource:1000G,known=false,training=true,truth=false,prior=10.0 ${dir}/1000G_phase1.indels.b37.vcf \
   -an QD \
   -an DP \
