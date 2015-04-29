@@ -1,13 +1,21 @@
 #Purpose
-This script was created to run the GATK germline variant calling best pratices pipeline. 
+The scripts within this repo were created to run the GATK germline variant calling best pratices pipeline. 
 The pipeline takes unprocessed bam file(s) as input and outputs the biological genomic variance of the input to a given reference
 
 ##Overview
 
 ###Setup & Pipeline
-There are 2 scripts, Setup and Pipeline. The setup script installs all of the necessary tools and all of the references. The pipeline script implements the GATK pipeline. 
+There are currently 4 scripts: 
 
-###Reference Files
+1. **Setup** installs all of the necessary tools and all of the references.
+2.  **processingGATK** runs the steps necessary to transforms reads into being ready for variant calling. Flagstat,Sort, Mark Duplicates, Indel Realignment, BQSR
+3.  **UGvariantCalling.sh** Unified Genotyper variant calling plus VQSR
+4.  **HAPvariantCalling.sh** Haplotyper variant calling plus VQSR
+
+There is no clear answer about which genotyper to use, you need to pick what you depending on your goals. The HC is more accurate for both SNPs and INDELs but is horribly slow and doesn't scale well to multiple samples.
+
+#
+##Reference Files
 All reference files have come from the GATK Resource bundle which can be found at [B37 Resource Bundle](ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/2.5/b37)
 
 * **Reference Genome (GRCh37):**
@@ -37,7 +45,10 @@ processes that do not depend on eachother in any way. They take the same input. 
 **Steps**
 
 1. Launch a trusty-ubuntu image
-1. Use chmod +x GATKsetup.sh to make the script executable
+1. Install all scripts and make them executable
+
+		chmod u+x <each Script here>
+
 2. If downloading any documents from s3, Create environment variables for your s3 credentials
 
         export SECRET_KEY=yourSecretKey
@@ -47,12 +58,13 @@ processes that do not depend on eachother in any way. They take the same input. 
 		./GATKsetup.sh
 3
 . Use your favorite text editor to assign your input file(s) to the INPUT variable in the GATKpipe.sh script
-4. Use chmod +x GATKpipe.sh to make the script executable
-5. At top of GATKpipe.sh, change the RAM & THREADS variables to reflect 90% of machine RAM and number of cores, respectively
-6. Place the address to the appropriate input file on the next line of the script.
-4. Run GATKpipe.sh
 
-		./GATKpipe.sh
+5. At top of the **processing**, **UGcaller/HCcaller** scripts, set the RAM, THREADS, dir, ref, & INPUT variables to reflect your run. The RAM variable should be set to reflect 90% of your machine's RAM. The THREADS variable should reflect the number of cores
+4. Run processingGATK.sh
+
+		./processingGATK.sh
+		
+5. Run either the HAPvariantCalling.sh OR UGvariantCalling.sh scripts
 
 ##Tools
 * **Process:**
@@ -62,6 +74,7 @@ processes that do not depend on eachother in any way. They take the same input. 
 * IndelRealignment -locally realign the reads to minimize the number of mismatches to the reference
 * BQSR -rescore the bases based on statistical adherence to known snps and indels
 * VariantCalling -Search for (ideally) biological differences differences between input genome and reference genome
+* Variant Quality Score Recalibration (VQSR) - The GATK callers are designed to be very lenient in calling variants. VQSR is a two step process that uses machine-learning methods to assign a well calibrated probability to each variant call in a raw call set.
 
 ###Flags
 * **java processes:** 
