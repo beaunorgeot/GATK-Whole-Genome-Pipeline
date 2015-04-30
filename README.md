@@ -57,7 +57,7 @@ processes that do not depend on eachother in any way. They take the same input. 
 
 		./GATKsetup.sh
 3
-. Use your favorite text editor to assign your input file(s) to the INPUT variable in the GATKpipe.sh script
+. Use your favorite text editor to assign your input file(s) to the INPUT variable in the processingGATK.sh script
 
 5. At top of the **processing**, **UGcaller/HCcaller** scripts, set the RAM, THREADS, dir, ref, & INPUT variables to reflect your run. The RAM variable should be set to reflect 90% of your machine's RAM. The THREADS variable should reflect the number of cores
 4. Run processingGATK.sh
