@@ -98,5 +98,18 @@ stand_emit_conf 10.0 means that it won’t report any potential SNPs with a qual
 but unless they meet the quality threshold set by -stand_call_conf (30.0, in this case), 
 they will be listed as failing the quality filter. My choices are 'generic'. 
 For variant optimization see: http://gatkforums.broadinstitute.org/discussion/1268/how-should-i-interpret-vcf-files-produced-by-the-gatk
+* **Haplotype Caller**
+* --genotyping mode:This speciﬁes how we want the program to determine the alternate alleles to use for genotyping. In the default DISCOVERY mode, the program will choose the mostlikely alleles out of those it sees in the data
+* --stand emit conf: Emission confidence threshold. Sets the lower limit for the score (Phred-based) of any that should even be considered for the possibility of being a variant.
+* -stand call conf: Call confidence threshold. Sets the lower limit for any base that will actuall be called a variant.
+* **VQSR**
+* All 'an' flags specify which annotations the program should use to evaluate the likelihood of SNPs/INDELs being real. These annotations are included in the information generated foreach variant call by the caller.
+* -an DP : Total Depth of coverage
+* -an QD : Variant conﬁdence (from the QUAL ﬁeld)/unﬁltered depth of non-reference samples
+* -an FS : FisherStrand. value using Fisher’s Exact Test (Fisher, 1922) to detect strand bias(the variation being seen on only the forward or only the reverse strand) in thereads. More bias is indicative of false positive calls
+* -an MQRankSum : approximation from the Mann-Whitney Rank Sum Test (Mann andWhitney, 1947) for mapping qualities (reads with ref bases versus those with thealternate allele)
+* -an ReadPosRankSum : -approximation from the Mann-Whitney Rank Sum Test (Mann andWhitney,1947)for the distance from the end of the read for reads with the alternate allele. If the alternate allele is only seen near the ends of reads, this is indicative of error.
+* -minNumBad : Minimum number of bad variants. This is the minimum number of worst-scoring variants to use when building the model of bad variants.
+
 
 
