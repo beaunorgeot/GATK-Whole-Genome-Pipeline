@@ -1,6 +1,8 @@
 #Purpose
 The scripts within this repo were created to run the GATK germline variant calling best pratices pipeline. 
-The pipeline takes unprocessed bam file(s) as input and outputs the biological genomic variance of the input to a given reference
+The pipeline takes unprocessed bam file(s) as input and outputs the biological genomic variance of the input to a given reference. 
+
+I've create a helper document ("Understanding the GATK Pipeline") that explains the logic behind each of the processes in the pipeline.
 
 ##Overview
 
