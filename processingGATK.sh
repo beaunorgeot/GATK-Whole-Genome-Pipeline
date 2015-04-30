@@ -26,13 +26,13 @@ ref=hs37d5.fa
 
 cd ${dir}
 # get input bam file
-#~/s3cmd/s3cmd get s3://bd2k-test-data/$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
+#~/s3cmd/s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 
 #NA12878 chr20 bam
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # Create Variable for input file
-#INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
+#INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
 INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # index bam file
