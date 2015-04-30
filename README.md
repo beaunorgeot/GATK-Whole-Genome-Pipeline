@@ -45,9 +45,9 @@ processes that do not depend on eachother in any way. They take the same input. 
 **Steps**
 
 1. Launch a trusty-ubuntu image
-1. Install all scripts and make them executable
+1. Install setup script and make it executable
 
-		chmod u+x <each Script here>
+		chmod u+x <scriptHere>
 
 2. If downloading any documents from s3, Create environment variables for your s3 credentials
 
@@ -56,10 +56,14 @@ processes that do not depend on eachother in any way. They take the same input. 
 3. Run GATKsetup.sh
 
 		./GATKsetup.sh
-3
-. Use your favorite text editor to assign your input file(s) to the INPUT variable in the processingGATK.sh script
 
-5. At top of the **processing**, **UGcaller/HCcaller** scripts, set the RAM, THREADS, dir, ref, & INPUT variables to reflect your run. The RAM variable should be set to reflect 90% of your machine's RAM. The THREADS variable should reflect the number of cores
+
+5. At top of the **processing**, **UGcaller/HCcaller** scripts, use your favorite text editor to set the RAM, THREADS, dir, ref, & INPUT variables to reflect your run. The RAM variable should be set to reflect 90% of your machine's RAM. The THREADS variable should reflect the number of cores
+6. Install processingGATK,UGvariantingCalling &/OR HAPvariantCalling scripts and make them executable
+
+		chmod u+x <each script Here>
+
+
 4. Run processingGATK.sh
 
 		./processingGATK.sh
