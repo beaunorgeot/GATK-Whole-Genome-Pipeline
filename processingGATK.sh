@@ -22,18 +22,18 @@ THREADS=32
 dir=/data
 # Set the reference fasta
 # CHECK LINE 83 OR THERE-ABOUTS, IT POINTS TO A REFERENCE NOT INCLUDED IN THIS VAR
-ref=hs37d5.fa
+ref=human_g1k_v37.fasta
 
 cd ${dir}
 # get input bam file
-#~/s3cmd/s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
+s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 
 #NA12878 chr20 bam
-wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
+#wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # Create Variable for input file
-#INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
-INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
+INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
+#INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # index bam file
 samtools index ${dir}/$INPUT1
@@ -81,9 +81,10 @@ java $RAM \
     -jar ~/picard/picard.jar \
     CreateSequenceDictionary \
     REFERENCE=${dir}/${ref} \
-    OUTPUT=${dir}/hs37d5.dict
-    #OUTPUT=${dir}/human_g1k_v37.dict
-    #OUTPUT=${dir}/${ref}.dict
+    OUTPUT=${dir}/human_g1k_v37.dict
+    #OUTPUT=${dir}/hs37d5.dict
+
+
 
 # Index the markdups.bam for realignment
 samtools index ${dir}/$INPUT1.mkdups.bam
