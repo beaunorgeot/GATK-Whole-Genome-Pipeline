@@ -26,7 +26,7 @@ ref=human_g1k_v37.fasta
 
 cd ${dir}
 # get input bam file
-s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
+#s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 
 #NA12878 chr20 bam
 #wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
@@ -36,7 +36,7 @@ INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 #INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # index bam file
-samtools index ${dir}/$INPUT1
+#samtools index ${dir}/$INPUT1
 
 cd ~
 
@@ -47,7 +47,7 @@ time samtools flagstat \
 
 # sort reads in picard
 time java $RAM \
-    -jar ~/picard/picard.jar \
+    -jar ~/picard-tools-1.130/picard.jar \
     SortSam \
     INPUT=${dir}/$INPUT1 \
     OUTPUT=${dir}/$INPUT1.sorted.bam \
@@ -57,7 +57,7 @@ rm -r ${dir}/$INPUT1
 
 # mark duplicates reads in picard
 time java $RAM \
-    -jar ~/picard/picard.jar \
+    -jar ~/picard-tools-1.130/picard.jar \
     MarkDuplicates \
     INPUT=${dir}/$INPUT1.sorted.bam \
     OUTPUT=${dir}/$INPUT1.mkdups.bam \
