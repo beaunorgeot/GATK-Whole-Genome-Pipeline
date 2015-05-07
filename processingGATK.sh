@@ -21,12 +21,15 @@ THREADS=32
 # Set the dir for the reference files and input bam
 dir=/data
 # Set the reference fasta
-# CHECK LINE 83 OR THERE-ABOUTS, IT POINTS TO A REFERENCE NOT INCLUDED IN THIS VAR
-ref=human_g1k_v37.fasta
+#ref=human_g1k_v37.fasta
+#phase2 reference
+ref=hs37d5.fa
+#choose how to log time
+Time=/usr/bin/time
 
 cd ${dir}
 # get input bam file
-#s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
+s3cmd get s3://bd2k-test-data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 
 #NA12878 chr20 bam
 #wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
@@ -36,33 +39,34 @@ INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 #INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 
 # index bam file
-#samtools index ${dir}/$INPUT1
+samtools index ${dir}/$INPUT1
 
 cd ~
 
 #START PIPELINE
 # calculate flag stats using samtools
-time samtools flagstat \
-    ${dir}/$INPUT1
+$Time samtools flagstat \
+    ${dir}/$INPUT1 \
+    > flagstat.report 2>&1
 
 # sort reads in picard
-time java $RAM \
-    -jar ~/picard-tools-1.130/picard.jar \
+$Time java $RAM \
+    -jar ~/picard/picard.jar \
     SortSam \
     INPUT=${dir}/$INPUT1 \
     OUTPUT=${dir}/$INPUT1.sorted.bam \
-    SORT_ORDER=coordinate
+    SORT_ORDER=coordinate \
     > sortReads.report 2>&1
 rm -r ${dir}/$INPUT1
 
 # mark duplicates reads in picard
-time java $RAM \
-    -jar ~/picard-tools-1.130/picard.jar \
+$Time java $RAM \
+    -jar ~/picard/picard.jar \
     MarkDuplicates \
     INPUT=${dir}/$INPUT1.sorted.bam \
     OUTPUT=${dir}/$INPUT1.mkdups.bam \
     METRICS_FILE=metrics.txt \
-    ASSUME_SORTED=true
+    ASSUME_SORTED=true \
     > markDups.report 2>&1
 rm -r ${dir}/$INPUT1.sorted.bam
 
@@ -77,20 +81,21 @@ rm -r ${dir}/$INPUT1.sorted.bam
 # create sequence dictionary for reference genome
 # We could skip this step. I've download the b37.dict
 
-java $RAM \
+$Time java $RAM \
     -jar ~/picard/picard.jar \
     CreateSequenceDictionary \
     REFERENCE=${dir}/${ref} \
-    OUTPUT=${dir}/human_g1k_v37.dict
-    #OUTPUT=${dir}/hs37d5.dict
+    OUTPUT=${dir}/hs37d5.dict
+    #OUTPUT=${dir}/human_g1k_v37.dict
 
 
 
 # Index the markdups.bam for realignment
-samtools index ${dir}/$INPUT1.mkdups.bam
+$Time samtools index ${dir}/$INPUT1.mkdups.bam
 
+#Here Next
 # create target indels (find areas likely in need of realignment)
-time java $RAM \
+$Time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T RealignerTargetCreator \
     -known ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
@@ -98,11 +103,11 @@ time java $RAM \
     -R ${dir}/${ref} \
     -I ${dir}/$INPUT1.mkdups.bam \
     -o ${dir}/target_intervals.list \
-    -nt $THREADS
+    -nt $THREADS \
     > targetIndels.report 2>&1
 
 # realign reads
-time java $RAM \
+$Time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T IndelRealigner \
     -known ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
@@ -111,14 +116,13 @@ time java $RAM \
     -targetIntervals ${dir}/target_intervals.list \
     -I ${dir}/$INPUT1.mkdups.bam \
     -o ${dir}/$INPUT1.realigned.bam \
-    #-nt $THREADS \ nt is not supported by IndelRealigner
     > realignIndels.report 2>&1
 rm -r ${dir}/$INPUT1.mkdups.bam
 
 # GATK BQSR
 
 # create gatk recalibration table
-time java $RAM \
+$Time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T BaseRecalibrator \
     -R ${dir}/${ref} \
@@ -127,11 +131,11 @@ time java $RAM \
     -knownSites ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
     -knownSites ${dir}/1000G_phase1.indels.b37.vcf \
     -o ${dir}/recal_data.table \
-    -nct $THREADS
+    -nct $THREADS \
     > recalibrationTable.report 2>&1
 
 # recalibrate reads
-time java $RAM \
+$Time java $RAM \
     -jar ~/GenomeAnalysisTK.jar \
     -T PrintReads \
     -R ${dir}/${ref} \
