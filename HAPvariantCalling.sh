@@ -13,18 +13,20 @@ THREADS=32
 # Set the dir for the reference files and input bam
 dir=/data
 # Set the reference fasta
-# CHECK LINE 83 OR THERE-ABOUTS, IT POINTS TO A REFERENCE NOT INCLUDED IN THIS VAR
+#phase2 reference
 ref=hs37d5.fa
 
 # Create Variable for input file
 #INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
 INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
+#choose how to log time
+Time=/usr/bin/time
 
 # For running on multipe samples (a cohort) see:
 #http://gatkforums.broadinstitute.org/discussion/3893/calling-variants-on-cohorts-of-samples-using-the-haplotypecaller-in-gvcf-mode
 
 #snps & indels together
-time java $RAM \
+$Time java $RAM \
 -jar ~/GenomeAnalysisTK.jar \
 -nct $THREADS \
 -R ${dir}/${ref} \
@@ -44,7 +46,7 @@ time java $RAM \
 
 ## GATK VARIANT QUALITY SCORE RECALIBRATION
 #SNP
-java $RAM \
+$Time java $RAM \
   -Djava.io.tmpdir=/tmp \
   -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
@@ -52,7 +54,7 @@ java $RAM \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
   -nt $THREADS \
   -resource:hapmap,known=false,training=true,truth=true,prior=15.0 ${dir}/hapmap_3.3.b37.vcf \
-  -resource:omni,known=false,training=true,truth=true,prior=12.0 ${dir}/1000G_omni2.5.b37.vcf \
+  -resource:omni,known=false,training=true,truth=false,prior=12.0 ${dir}/1000G_omni2.5.b37.vcf \
   -resource:dbsnp,known=true,training=false,truth=false,prior=2.0 ${dir}/dbsnp_137.b37.vcf \
   -resource:1000G,known=false,training=true,truth=false,prior=10.0 ${dir}/1000G_phase1.indels.b37.vcf \
   -an QD \
@@ -69,7 +71,7 @@ java $RAM \
   #-percentBad 0.01 \ depreciated
 
 #Apply Snp Recalibration
-java $RAM \
+$Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
@@ -83,7 +85,7 @@ java $RAM \
   > ApplyRecalibration_SNP.report 2>&1
 
 #Indel Recalibration
-java $RAM -Djava.io.tmpdir=/tmp \
+$Time java $RAM -Djava.io.tmpdir=/tmp \
   -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
@@ -103,7 +105,7 @@ java $RAM -Djava.io.tmpdir=/tmp \
   #-percentBad 0.01 \depreciated
 
 #Apply Indel Recalibration
-java $RAM \
+$Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \

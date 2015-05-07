@@ -13,8 +13,10 @@ THREADS=32
 # Set the dir for the reference files and input bam
 dir=/data
 # Set the reference fasta
-# CHECK LINE 83 OR THERE-ABOUTS, IT POINTS TO A REFERENCE NOT INCLUDED IN THIS VAR
+#phase2 reference
 ref=hs37d5.fa
+#choose how to log time
+Time=/usr/bin/time
 
 # Create Variable for input file
 #INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
@@ -25,7 +27,7 @@ INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
 # 1000Genomes Background BAMS can be run concurrently with UnifiedGenotyper to improve accuracy? (CEU,GBR are the recommended ones)
 
 #snps
-time java $RAM \
+$Time java $RAM \
 -jar ~/GenomeAnalysisTK.jar \
 -nt $THREADS \
 -R ${dir}/${ref} \
@@ -44,7 +46,7 @@ time java $RAM \
 	#-L /b37/target_intervals.bed \ intervals to operate over. See docstring
 
 #indels
-time java $RAM \
+$Time java $RAM \
 -jar ~/GenomeAnalysisTK.jar \
 -nt $THREADS \
 -R ${dir}/${ref} \
@@ -64,14 +66,14 @@ time java $RAM \
 
 ## GATK VARIANT QUALITY SCORE RECALIBRATION
 # Snp Recalibration
-java $RAM \
+$Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
   -nt $THREADS \
   -resource:hapmap,known=false,training=true,truth=true,prior=15.0 ${dir}/hapmap_3.3.b37.vcf \
-  -resource:omni,known=false,training=true,truth=true,prior=12.0 ${dir}/1000G_omni2.5.b37.vcf \
+  -resource:omni,known=false,training=true,truth=false,prior=12.0 ${dir}/1000G_omni2.5.b37.vcf \
   -resource:dbsnp,known=true,training=false,truth=false,prior=2.0 ${dir}/dbsnp_137.b37.vcf \
   -resource:1000G,known=false,training=true,truth=false,prior=10.0 ${dir}/1000G_phase1.indels.b37.vcf \
   -an QD \
@@ -89,7 +91,7 @@ java $RAM \
 
 
 #Apply Snp Recalibration
-java $RAM \
+$Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.SNP.gatk.vcf \
@@ -105,7 +107,7 @@ java $RAM \
 
 
 #Indel Recalibration
-java $RAM \
+$Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T VariantRecalibrator \
   -R ${dir}/${ref} \
@@ -123,7 +125,7 @@ java $RAM \
   > VariantRecalibrator_INDEL.report 2>&1
 
 #Apply Indel Recalibration
-java $RAM \
+$Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.INDEL.gatk.vcf \
