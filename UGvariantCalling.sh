@@ -20,7 +20,7 @@ Time=/usr/bin/time
 
 # Create Variable for input file
 #INPUT1=$INPUT1.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
-INPUT1=NA12878.chrom20.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
+INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 
 # two stages, check for snps, check for indels
 # When these stages are run for multiple bams, uncomment the desired number of -I slots
