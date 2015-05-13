@@ -79,7 +79,6 @@ $Time java $RAM \
   -an QD \
   -an DP \
   -an FS \
-  -an MQRankSum \
   -an ReadPosRankSum \
   -mode SNP \
   -recalFile ${dir}/$INPUT1.SNP.recal \
@@ -116,7 +115,6 @@ $Time java $RAM \
   -resource:mills,known=true,training=true,truth=true,prior=12.0 ${dir}/Mills_and_1000G_gold_standard.indels.b37.vcf \
   -an DP \
   -an FS \
-  -an MQRankSum \
   -an ReadPosRankSum \
   -mode INDEL \
   -recalFile ${dir}/$INPUT1.INDEL.recal \
