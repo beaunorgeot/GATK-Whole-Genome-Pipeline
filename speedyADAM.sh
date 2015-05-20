@@ -29,6 +29,19 @@ mv dbsnp132_20101103.vcf dbsnp_132.vcf
 cd ~
 ./ephemeral-hdfs/bin/hadoop fs -put /mnt/dbsnp_132.vcf .
 
+# convert known snps file to adam variants file
+$Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
+    ${hdfs_root}/user/${USER}/dbsnp_132.vcf \
+    ${hdfs_root}/user/${USER}/dbsnp_132.var.adam \
+    -onlyvariants \
+    > convert_known_snps_2adam.report 2>&1
+
+#remove known snps vcf
+./ephemeral-hdfs/bin/hadoop fs -rmr \
+    ${hdfs_root}/user/${USER}/dbsnp_132.vcf
+
+# START PIPELINE
+
 # convert to adam, and remove bam
 $Time ${ADAM_HOME}/bin/adam-submit transform \
     ${hdfs_root}/user/${USER}/$Input1.bam \
@@ -48,18 +61,6 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
 #remove .adam input file
 ./ephemeral-hdfs/bin/hadoop fs -rmr \
     ${hdfs_root}/user/${USER}/$Input1.adam
-
-
-# convert known snps file to adam variants file
-$Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
-    ${hdfs_root}/user/${USER}/dbsnp_132.vcf \
-    ${hdfs_root}/user/${USER}/dbsnp_132.var.adam \
-    -onlyvariants \
-    > convert_known_snps_2adam.report 2>&1
-
-#remove known snps vcf
-./ephemeral-hdfs/bin/hadoop fs -rmr \
-    ${hdfs_root}/user/${USER}/dbsnp_132.vcf
 
 # realign indels
 $Time ${ADAM_HOME}/bin/adam-submit transform \
