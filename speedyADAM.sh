@@ -89,4 +89,4 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     ${hdfs_root}/user/${USER}/$Input1.bqsr.bam \
     > convert_adam2bam.report 2>&1
 
-#HERE BEGINS VARIANT CALLING STEPS USING .bqsr.adam as the input
+#HERE BEGINS VARIANT CALLING STEPS USING .bqsr.bam as the input
