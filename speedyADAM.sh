@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #Purpose: Run the preproccessing genomic stages on ADAM as fast as possible. Hand variant-ready reads over to an external Variant Caller
-
+# consider var for spark home
 
 set -e
 set -x
@@ -13,13 +13,23 @@ export SPARK_HOME="/root/spark"
 export ADAM_OPTS="--conf spark.eventLog.enabled=true --conf spark.worker.timeout=500"
 #export ADAM_OPTS="--conf spark.shuffle.service.enable=true"
 
-Time=/usr/bin/time
+#Get spark -s3 downloader
+curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/spark-s3-downloader-0.1-SNAPSHOT.jar
 
-Input1=
+#Get the ADAM jar
+curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/adam-core_2.10-0.16.1-SNAPSHOT.9f0f41a.jar \
+
+Time=/usr/bin/time
+ADAM_HOME=~/adam-core_2.10-0.16.1-SNAPSHOT.9f0f41a.jar
+hdfs_root=hdfs://spark-master:8020
+USER=ubuntu
+Input1=FEEDME
+
 # pull $Input1 from s3 using s3-downloader
-~/spark/bin/spark-submit ~/spark-s3-downloader-0.1-SNAPSHOT.jar \
-    s3://bd2k-test-data/$Input1.bam \
-    ${hdfs_root}/user/${USER}/$Input1.bam
+/opt/sparkbox/spark/bin/spark-submit \
+    ~/spark-s3-downloader-0.1-SNAPSHOT.jar \
+    s3://bd2k-test-data/${Input1}.bam \
+    ${hdfs_root}/${Input1}.bam
 
 # download dbsnp file for bqsr step
 cd /mnt
