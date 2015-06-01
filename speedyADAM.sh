@@ -58,7 +58,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     ${hdfs_root}/user/${USER}/$Input1.adam \
     > convert_bam2adam.report 2>&1
 
-./ephemeral-hdfs/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
     ${hdfs_root}/user/${USER}/$Input1.bam
 
 # mark duplicate reads
@@ -69,7 +69,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     > markDups.report 2>&1
 
 #remove .adam input file
-./ephemeral-hdfs/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
     ${hdfs_root}/user/${USER}/$Input1.adam
 
 # realign indels
@@ -80,7 +80,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     > realignIndels.report 2>&1
 
 #remove mkdup.adam input
-./ephemeral-hdfs/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
     ${hdfs_root}/user/${USER}/$Input1.mkdup.adam
 
 # recalibrate quality scores
@@ -91,7 +91,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     -known_snps ${hdfs_root}/user/${USER}/dbsnp_132.var.adam \
     > BQSR.report 2>&1
 
-./ephemeral-hdfs/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
     ${hdfs_root}/user/${USER}/dbsnp_132.var.adam
 
 # Convert .adam file back to bam for external Genotyper
