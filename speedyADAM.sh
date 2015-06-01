@@ -36,8 +36,8 @@ cd /mnt
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/dbsnp132_20101103.vcf.gz
 gunzip dbsnp132_20101103.vcf.gz
 mv dbsnp132_20101103.vcf dbsnp_132.vcf
-cd ~
-./ephemeral-hdfs/bin/hadoop fs -put /mnt/dbsnp_132.vcf .
+#put file into hdfs
+/opt/sparkbox/hadoop/bin/hadoop fs -put /mnt/dbsnp_132.vcf
 
 # convert known snps file to adam variants file
 $Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
@@ -47,7 +47,7 @@ $Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
     > convert_known_snps_2adam.report 2>&1
 
 #remove known snps vcf
-./ephemeral-hdfs/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
     ${hdfs_root}/user/${USER}/dbsnp_132.vcf
 
 # START PIPELINE
