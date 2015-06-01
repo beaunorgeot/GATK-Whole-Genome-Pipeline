@@ -32,12 +32,11 @@ Input1=FEEDME
     ${hdfs_root}/${Input1}.bam
 
 # download dbsnp file for bqsr step
-cd /mnt
-wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/dbsnp132_20101103.vcf.gz
+curl -O https://s3-us-west-2.amazonaws.com/bd2k-test-data/dbsnp132_20101103.vcf.gz
 gunzip dbsnp132_20101103.vcf.gz
 mv dbsnp132_20101103.vcf dbsnp_132.vcf
 #put file into hdfs
-/opt/sparkbox/hadoop/bin/hadoop fs -put /mnt/dbsnp_132.vcf
+/opt/sparkbox/hadoop/bin/hadoop fs -put ${hdfs_root}/user/${USER}/dbsnp_132.vcf
 
 # convert known snps file to adam variants file
 $Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
