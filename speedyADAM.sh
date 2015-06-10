@@ -7,9 +7,10 @@ set -e
 set -x
 set -o pipefail
 
-export ADAM_DRIVER_MEMORY="55g"
-export ADAM_EXECUTOR_MEMORY="55g"
-export SPARK_HOME="/root/spark"
+executor_memory=55G
+export ADAM_DRIVER_MEMORY=${executor_memory}
+export ADAM_EXECUTOR_MEMORY=${executor_memory}
+export SPARK_HOME="/opt/sparkbox/spark"
 export ADAM_OPTS="--conf spark.eventLog.enabled=true --conf spark.worker.timeout=500"
 #export ADAM_OPTS="--conf spark.shuffle.service.enable=true"
 
@@ -17,15 +18,18 @@ export ADAM_OPTS="--conf spark.eventLog.enabled=true --conf spark.worker.timeout
 curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/spark-s3-downloader-0.1-SNAPSHOT.jar
 
 #Get the ADAM jar
-curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/adam-core_2.10-0.16.1-SNAPSHOT.9f0f41a.jar \
+#curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam-distribution_2.11-0.17.0-bin.tar.gz
+curl -LOv http://search.maven.org/remotecontent?filepath=org/bdgenomics/adam/adam-distribution_2.10/0.17.0/adam-distribution_2.10-0.17.0-bin.tar.gz
+tar -xvzf adam-distribution_2.10-0.17.0-bin.tar.gz
+
 
 Time=/usr/bin/time
-ADAM_HOME=~/adam-core_2.10-0.16.1-SNAPSHOT.9f0f41a.jar
-hdfs_root=hdfs://spark-master:8020
+export ADAM_HOME=~/adam-distribution_2.10-0.17.0
+export hdfs_root=hdfs://spark-master:8020
 Input1=FEEDME
 
 # pull $Input1 from s3 using s3-downloader
-/opt/sparkbox/spark/bin/spark-submit \
+/opt/sparkbox/spark/bin/spark-submit --executor-memory ${executor_memory} \
     ~/spark-s3-downloader-0.1-SNAPSHOT.jar \
     s3://bd2k-test-data/${Input1}.bam \
     ${hdfs_root}/${Input1}.bam
@@ -35,7 +39,11 @@ curl -O https://s3-us-west-2.amazonaws.com/bd2k-test-data/dbsnp132_20101103.vcf.
 gunzip dbsnp132_20101103.vcf.gz
 mv dbsnp132_20101103.vcf dbsnp_132.vcf
 #put file into hdfs
-/opt/sparkbox/hadoop/bin/hadoop fs -put ${hdfs_root}/dbsnp_132.vcf
+/opt/sparkbox/hadoop/bin/hadoop fs -put dbsnp_132.vcf ${hdfs_root}/dbsnp_132.vcf
+
+#preemptively remove pre-existing files
+hadoop fs -rm -R \
+    ${hdfs_root}/dbsnp_132.var.adam || true
 
 # convert known snps file to adam variants file
 $Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
@@ -45,10 +53,13 @@ $Time ${ADAM_HOME}/bin/adam-submit vcf2adam \
     > convert_known_snps_2adam.report 2>&1
 
 #remove known snps vcf
-/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rm -R \
     ${hdfs_root}/dbsnp_132.vcf
 
 # START PIPELINE
+
+#preemptively remove pre-existing files
+hadoop fs -rm -R ${hdfs_root}/$Input1.adam || true
 
 # convert to adam, and remove bam
 $Time ${ADAM_HOME}/bin/adam-submit transform \
@@ -56,7 +67,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     ${hdfs_root}/$Input1.adam \
     > convert_bam2adam.report 2>&1
 
-/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rm -R \
     ${hdfs_root}/$Input1.bam
 
 # mark duplicate reads
@@ -67,7 +78,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     > markDups.report 2>&1
 
 #remove .adam input file
-/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rm -R \
     ${hdfs_root}/$Input1.adam
 
 # realign indels
@@ -78,7 +89,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     > realignIndels.report 2>&1
 
 #remove mkdup.adam input
-/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rm -R \
     ${hdfs_root}/$Input1.mkdup.adam
 
 # recalibrate quality scores
@@ -89,7 +100,7 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
     -known_snps ${hdfs_root}/dbsnp_132.var.adam \
     > BQSR.report 2>&1
 
-/opt/sparkbox/hadoop/bin/hadoop fs -rmr \
+/opt/sparkbox/hadoop/bin/hadoop fs -rm -R \
     ${hdfs_root}/dbsnp_132.var.adam
 
 # Convert .adam file back to bam for external Genotyper
