@@ -11,12 +11,11 @@ executor_memory=55G
 export ADAM_DRIVER_MEMORY=${executor_memory}
 export ADAM_EXECUTOR_MEMORY=${executor_memory}
 export SPARK_HOME="/opt/sparkbox/spark"
-export ADAM_OPTS="--conf spark.eventLog.enabled=true --conf spark.worker.timeout=500"
+export ADAM_OPTS="--conf spark.eventLog.enabled=true --conf spark.worker.timeout=500 --conf spark.driver.maxResultSize=10g"
 #export ADAM_OPTS="--conf spark.shuffle.service.enable=true"
 
 #Get spark -s3 downloader
-curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/spark-s3-downloader-0.1-SNAPSHOT.jar
-
+curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/spark-s3-downloader-0.3-SNAPSHOT.jar
 #Get the ADAM jar
 #curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam-distribution_2.11-0.17.0-bin.tar.gz
 curl -LOv http://search.maven.org/remotecontent?filepath=org/bdgenomics/adam/adam-distribution_2.10/0.17.0/adam-distribution_2.10-0.17.0-bin.tar.gz
@@ -27,10 +26,11 @@ Time=/usr/bin/time
 export ADAM_HOME=~/adam-distribution_2.10-0.17.0
 export hdfs_root=hdfs://spark-master:8020
 Input1=FEEDME
+#NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
 
 # pull $Input1 from s3 using s3-downloader
 /opt/sparkbox/spark/bin/spark-submit --executor-memory ${executor_memory} \
-    ~/spark-s3-downloader-0.1-SNAPSHOT.jar \
+    ~/spark-s3-downloader-0.2-SNAPSHOT.jar \
     s3://bd2k-test-data/${Input1}.bam \
     ${hdfs_root}/${Input1}.bam
 
