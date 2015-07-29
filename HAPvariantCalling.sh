@@ -1,3 +1,4 @@
+#! /bin/bash
 # GATK Haplotype VARIANT CALLING
 
 set -e
@@ -32,7 +33,7 @@ $Time java $RAM \
 -T HaplotypeCaller \
 --genotyping_mode DISCOVERY \
 --output_mode EMIT_VARIANTS_ONLY \
--I ${dir}/$INPUT1.bqsr.bam \
+-I ${dir}/$INPUT1 \
 -o ${dir}/$INPUT1.unified.raw.BOTH.gatk.vcf \
 -stand_emit_conf 10.0 \
 -stand_call_conf 30.0 \
@@ -106,7 +107,7 @@ $Time java $RAM \
   -jar ~/GenomeAnalysisTK.jar \
   -T ApplyRecalibration \
   -input ${dir}/$INPUT1.unified.raw.BOTH.gatk.vcf \
-  -o ${dir}/$INPUT.vqsr_INDEL.vcf \
+  -o ${dir}/$INPUT.HAPvqsr_INDEL.vcf \
   -R ${dir}/${ref} \
   -nt $THREADS \
   -ts_filter_level 99.0 \
