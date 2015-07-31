@@ -22,6 +22,9 @@ INPUT1=NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam
 #choose how to log time
 Time=/usr/bin/time
 
+# index bam file
+samtools index ${dir}/$INPUT1
+
 # For running on multipe samples (a cohort) see:
 #http://gatkforums.broadinstitute.org/discussion/3893/calling-variants-on-cohorts-of-samples-using-the-haplotypecaller-in-gvcf-mode
 
