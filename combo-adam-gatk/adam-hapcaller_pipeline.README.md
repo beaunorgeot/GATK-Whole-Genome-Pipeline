@@ -1,7 +1,8 @@
 # ADAM-HapCaller Pipeline
 
 ###Purpose
-Preprocess bam files using adam, call variants w/GATK's Haplotype caller
+Preprocess bam files using adam, call variants w/GATK's Haplotype caller.
+There's a simple py script **timeMoneyCalc** that lets you estimate the relative time/money importance of making improvements to each part of this pipeline
 
 ### Don't Judge Me
 This process is just a hack that I've put together to show the utility and interoperability of adam. I'm expecting parts of this process to change, I'm especially hoping that how adam gets converted into bam changes so we can remove some steps. That's why everything is compartmentalized
