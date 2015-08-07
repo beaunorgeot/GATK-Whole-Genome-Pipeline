@@ -1,6 +1,16 @@
 
 from __future__ import division
 
+"""
+I got tired of trying to figure out how much improving a certain step would save us
+in terms of time and $$. After adjusting the parameters, running the script will
+print
+1. the time and cost of the combined pipeline
+2. a cost and time comparison (as a ratio) between the combined adam-gatk pipeline and the
+gatk best practices pipeline.
+
+"""
+
 numSlaves = 16
 #instance price dollars/hour
 slaveCost = 1.4 #r3.4xlarge = 1.4
@@ -29,12 +39,11 @@ var = (35*60) + 49
 time = adam + ups3 + dwns3 + reorder + sort + var
 cost = (adam + ups3)*clusterPrice + (dwns3 + reorder + sort + var)*bigMachine
 
-print("time",time)
+print("time",time, "cost", cost)
 
 #for reference, the all-gatk pipeline
 gatTime = (148*60)
 gatCost = gatTime*bigMachine
-print("gatTime", gatTime)
 
 timeCompare = time/gatTime
 costCompare = cost/gatCost
