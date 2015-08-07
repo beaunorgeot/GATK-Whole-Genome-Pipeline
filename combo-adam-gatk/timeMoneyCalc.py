@@ -39,7 +39,7 @@ var = (35*60) + 49
 time = adam + ups3 + dwns3 + reorder + sort + var
 cost = (adam + ups3)*clusterPrice + (dwns3 + reorder + sort + var)*bigMachine
 
-print("time",time, "cost", cost)
+print("time in minutes",time, "cost in dollars", cost/60)
 
 #for reference, the all-gatk pipeline
 gatTime = (148*60)
