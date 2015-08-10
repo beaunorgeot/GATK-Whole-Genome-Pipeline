@@ -21,7 +21,7 @@ Input1=FEEDME
 #NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906
 
 #Get spark -s3 downloader
-curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam/spark-s3-downloader-0.3-SNAPSHOT.jar
+curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/spark-s3-downloader-0.3-SNAPSHOT.jar
 #Get the ADAM jar
 #curl -O https://s3-us-west-2.amazonaws.com/bd2k-artifacts/adam-distribution_2.11-0.17.0-bin.tar.gz
 curl -LOv http://search.maven.org/remotecontent?filepath=org/bdgenomics/adam/adam-distribution_2.10/0.17.0/adam-distribution_2.10-0.17.0-bin.tar.gz
@@ -72,8 +72,8 @@ $Time ${ADAM_HOME}/bin/adam-submit transform \
 
 # sort the file
 $Time ${ADAM_HOME}/bin/adam-submit transform \
-    ${hdfs_root}/user/${USER}/NA12878.adam \
-    ${hdfs_root}/user/${USER}/NA12878.sort.adam \
+    ${hdfs_root}/$Input1.adam \
+    ${hdfs_root}/$Input1.sort.adam \
     -sort_reads \
     > sort.report 2>&1
 
