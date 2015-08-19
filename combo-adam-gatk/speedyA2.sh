@@ -1,5 +1,12 @@
 #! /bin/bash
 
+"""
+This script serves the same purpose as speedyADAM.sh
+ADAM 0.17.1 uses a different syntax for calling transform functions which is used here
+I chose to create a whole new script in case I go back to an older version of adam or
+the old syntax pops up again.
+"""
+
 set -e
 set -x
 set -o pipefail
