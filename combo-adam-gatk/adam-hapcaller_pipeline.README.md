@@ -4,8 +4,7 @@
 Preprocess bam files using adam, call variants w/GATK's Haplotype caller.
 There's a simple py script **timeMoneyCalc** that lets you estimate the relative time/money importance of making improvements to each part of this pipeline
 
-### Don't Judge Me
-This process is just a hack that I've put together to show the utility and interoperability of adam. I'm expecting parts of this process to change, I'm especially hoping that how adam gets converted into bam changes so we can remove some steps. That's why everything is compartmentalized
+This process was put together to show the utility and interoperability of ADAM. I'm expecting parts of this process to change, I'm especially hoping that how adam gets converted into bam changes so we can remove some steps. That's why everything is compartmentalized.
 
 ### Workflow
 1. Use the **SpeedyADAM.sh**  script to preprocess the bam files on an EC2 cluster. The current script assumes a cluster of r3.4xlarge machines built using cgcloud. Takes a bam as input; converts to ada,runs markdups,indel,bqsr, then converts adam to bam.
